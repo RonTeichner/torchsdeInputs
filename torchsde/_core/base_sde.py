@@ -88,8 +88,8 @@ class ForwardSDE(BaseSDE):
     #               f_and_g                #
     ########################################
 
-    def f_and_g_default(self, t, y):
-        return self.f(t, y), self.g(t, y)
+    def f_and_g_default(self, t, y, d):
+        return self.f(t, y, d), self.g(t, y)
 
     ########################################
     #                prod                  #
@@ -115,8 +115,8 @@ class ForwardSDE(BaseSDE):
     def f_and_g_prod_default1(self, t, y, v):
         return self.f(t, y), self.g_prod(t, y, v)
 
-    def f_and_g_prod_default2(self, t, y, v):
-        f, g = self.f_and_g(t, y)
+    def f_and_g_prod_default2(self, t, y, v, d):
+        f, g = self.f_and_g(t, y, d)
         return f, self.prod(g, v)
 
     ########################################

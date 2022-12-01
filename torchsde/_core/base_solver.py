@@ -139,7 +139,7 @@ class BaseSDESolver(metaclass=better_abc.ABCMeta):
                         curr_t, curr_y = next_t, next_y
                 else:
                     prev_t, prev_y = curr_t, curr_y
-                    curr_t, curr_y = next_t, self.step(curr_t, next_t, curr_y)
+                    curr_t, curr_y = next_t, self.step(curr_t, next_t, curr_y, d)
             ys.append(interp.linear_interp(t0=prev_t, y0=prev_y, t1=curr_t, y1=curr_y, t=out_t))
 
         return torch.stack(ys, dim=0)
