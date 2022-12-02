@@ -189,7 +189,7 @@ def check_contract(sde, y0, d, ts, bm, method, names, logqp):
     has_g = False
     if hasattr(sde, 'f'):
         has_f = True
-        f_drift_shape = tuple(sde.f(ts[0], y0, d).size())
+        f_drift_shape = tuple(sde.f(ts[0], y0, d, y0).size())
         _check_2d('Drift', f_drift_shape)
     if hasattr(sde, 'g'):
         has_g = True
