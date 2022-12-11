@@ -104,8 +104,10 @@ class BaseSDESolver(metaclass=better_abc.ABCMeta):
 
         prev_t = curr_t = ts[0]
         prev_y = curr_y = y0
-
+        prev_tilde_d = curr_tilde_d = d
+        
         ys = [y0]
+        tilde_d = [d]
         prev_error_ratio = None
 
         for out_t in ts[1:]:
@@ -138,8 +140,10 @@ class BaseSDESolver(metaclass=better_abc.ABCMeta):
                         prev_t, prev_y = curr_t, curr_y
                         curr_t, curr_y = next_t, next_y
                 else:
-                    prev_t, prev_y = curr_t, curr_y
-                    curr_t, curr_y = next_t, self.step(curr_t, next_t, curr_y, d, y0)
+                    prev_t, prev_y, prev_tilde_d = curr_t, curr_y, curr_tilde_d
+                    curr_t, curr_y_curr_tilde_d = next_t, self.step(curr_t, next_t, curr_y, d, y0)
+                    curr_y, curr_tilde_d = curr_y_curr_tilde_d[0], curr_y_curr_tilde_d[1]
             ys.append(interp.linear_interp(t0=prev_t, y0=prev_y, t1=curr_t, y1=curr_y, t=out_t))
+            tilde_d.append(interp.linear_interp(t0=prev_t, y0=prev_tilde_d, t1=curr_t, y1=curr_tilde_d, t=out_t))
 
-        return torch.stack(ys, dim=0)
+        return torch.stack(ys, dim=0), torch.stack(tilde_d, dim=0)

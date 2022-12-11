@@ -32,5 +32,6 @@ class Euler(base_solver.BaseSDESolver):
 
         f, g_prod = self.sde.f_and_g_prod(t0, y0, I_k, d, y_init)
 
-        y1 = y0 + f * dt + g_prod
-        return y1
+        y1 = y0 + f[0] * dt + g_prod
+        tilde_d = f[1]
+        return y1, tilde_d

@@ -189,7 +189,7 @@ def check_contract(sde, y0, d, ts, bm, method, names, logqp):
     has_g = False
     if hasattr(sde, 'f'):
         has_f = True
-        f_drift_shape = tuple(sde.f(ts[0], y0, d, y0).size())
+        f_drift_shape = tuple(sde.f(ts[0], y0, d, y0)[0].size())
         _check_2d('Drift', f_drift_shape)
     if hasattr(sde, 'g'):
         has_g = True
@@ -281,7 +281,7 @@ def integrate(sde, y0, ts, d, bm, method, dt, adaptive, rtol, atol, dt_min, opti
         warnings.warn(f"Numerical solution is not guaranteed to converge to the correct solution when using adaptive "
                       f"time-stepping with the Euler--Maruyama method with non-additive noise.")
 
-    ys = solver.integrate(ts,d)
+    ys, tilde_d = solver.integrate(ts,d)
 
     # --- Backwards compatibility: v0.1.1. ---
     if logqp:
@@ -293,4 +293,4 @@ def integrate(sde, y0, ts, d, bm, method, dt, adaptive, rtol, atol, dt_min, opti
         return ys, log_ratio_increments
     # ----------------------------------------
 
-    return ys
+    return ys, tilde_d
