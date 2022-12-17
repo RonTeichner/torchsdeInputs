@@ -44,7 +44,7 @@ def make_seq_requires_grad(sequence):
 
 
 def is_strictly_increasing(ts):
-    return all(x < y for x, y in zip(ts[:-1], ts[1:]))
+    return all(x <= y for x, y in zip(ts[:-1], ts[1:]))
 
 
 def is_nan(t):
