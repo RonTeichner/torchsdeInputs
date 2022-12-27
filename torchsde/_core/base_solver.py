@@ -115,15 +115,15 @@ class BaseSDESolver(metaclass=better_abc.ABCMeta):
                 next_t = min(curr_t + step_size, ts[-1])
                 if adaptive:
                     # Take 1 full step.
-                    next_y_full = self.step(curr_t, next_t, curr_y)
+                    next_y_full = self.step(curr_t, next_t, curr_y, d, y0)
                     # Take 2 half steps.
                     midpoint_t = 0.5 * (curr_t + next_t)
-                    midpoint_y = self.step(curr_t, midpoint_t, curr_y)
-                    next_y = self.step(midpoint_t, next_t, midpoint_y)
+                    midpoint_y = self.step(curr_t, midpoint_t, curr_y, d, y0)[0]
+                    next_y = self.step(midpoint_t, next_t, midpoint_y, d, y0)
 
                     # Estimate error based on difference between 1 full step and 2 half steps.
                     with torch.no_grad():
-                        error_estimate = adaptive_stepping.compute_error(next_y_full, next_y, rtol, atol)
+                        error_estimate = adaptive_stepping.compute_error(next_y_full, next_y[0], rtol, atol)
                         step_size, prev_error_ratio = adaptive_stepping.update_step_size(
                             error_estimate=error_estimate,
                             prev_step_size=step_size,
@@ -137,13 +137,16 @@ class BaseSDESolver(metaclass=better_abc.ABCMeta):
 
                     # Accept step.
                     if error_estimate <= 1 or step_size <= dt_min:
-                        prev_t, prev_y = curr_t, curr_y
-                        curr_t, curr_y = next_t, next_y
+                        prev_t, prev_y, prev_tilde_d = curr_t, curr_y, curr_tilde_d
+                        curr_t, curr_y_curr_tilde_d = next_t, next_y
+                        curr_y, curr_tilde_d = curr_y_curr_tilde_d[0], curr_y_curr_tilde_d[1]
                 else:
                     prev_t, prev_y, prev_tilde_d = curr_t, curr_y, curr_tilde_d
                     curr_t, curr_y_curr_tilde_d = next_t, self.step(curr_t, next_t, curr_y, d, y0)
                     curr_y, curr_tilde_d = curr_y_curr_tilde_d[0], curr_y_curr_tilde_d[1]
             ys.append(interp.linear_interp(t0=prev_t, y0=prev_y, t1=curr_t, y1=curr_y, t=out_t))
             tilde_d.append(interp.linear_interp(t0=prev_t, y0=prev_tilde_d, t1=curr_t, y1=curr_tilde_d, t=out_t))
-
-        return torch.stack(ys, dim=0), torch.stack(tilde_d, dim=0)
+        if tilde_d[0] is None:
+            return torch.stack(ys, dim=0), None
+        else:
+            return torch.stack(ys, dim=0), torch.stack(tilde_d, dim=0)
